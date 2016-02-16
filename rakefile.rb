@@ -1,5 +1,5 @@
 files = {
-  :openresty => "ngx_openresty-1.9.7.2.tar.gz",
+  :openresty => "openresty-1.9.7.3.tar.gz",
   :stream    => "stream-lua-nginx-module-master.zip"
 }
 
@@ -25,30 +25,30 @@ task :preinstall do
 end
 
 desc "install openresty"
-task :install do
+task :install,[:output] do |t,args|
   
   origin_dir = getwd()
   openresty = extract_file(files[:openresty])
   stream = extract_file(files[:stream])
   
-  cd "ngx_openresty-1.9.7.2"
-  sh %Q{./configure --prefix=/opt/#{openresty} \
+  cd "#{openresty}"
+  sh %Q{./configure --prefix=#{args[:output]}/#{openresty} \
           --with-stream \
           --with-stream_ssl_module \
-          --add-module=../
+          --add-module=../#{stream} \
+          -j4
 }
-  sh "make -j4"
-  sh "make install"
+  sh "make -j10"
+  sh "sudo make install"
   
   cd ".."
   rm_rf "#{openresty}"
   rm_rf "#{stream}"
   
-end
-
-task :clean do 
-  rm_rf "ngx_openresty-1.9.7.2"
-  rm_rf "stream-lua-nginx-module-master"
+  sym_name = openresty.split("-")[0]
+  cd "#{args[:output]}"
+  ln_sf "sudo #{args[:output]}/#{base}",sym_name
+  
 end
 
 task :default => :install
