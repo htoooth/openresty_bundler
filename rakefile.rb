@@ -4,27 +4,26 @@ files = {
 }
 
 def extract_file name
-    
-    action = {}
-    action['.tar.bz2'] = 'tar -jxvf'
-    action['.tar.gz'] = 'tar -zxvf'
-    action['.bz2'] = 'bzip2 -d'
-    action['.7z'] = 'p7zip -d'
-    action['.zip'] = 'unzip'
-    
-    extension = name.scan(/\.[a-z]+\S+/).join
-    base_name = File.basename(name,extension)
-    sh "#{action[extension]} #{name}"
-    base_name
+  action = {}
+  action['.tar.bz2'] = 'tar -jxvf'
+  action['.tar.gz'] = 'tar -zxvf'
+  action['.bz2'] = 'bzip2 -d'
+  action['.7z'] = 'p7zip -d'
+  action['.zip'] = 'unzip'
+  
+  extension = name.scan(/\.[a-z]+\S+/).join
+  base_name = File.basename(name,extension)
+  sh "#{action[extension]} #{name}"
+  base_name
 end
 
-desc "Prerequisites"
+desc "Prerequisites some package."
 task :preinstall do
-  sh "apt-get install libreadline-dev libncurses5-dev libpcre3-dev"
-  sh "apt-get install libssl-dev perl make build-essential"
+  sh "apt-get -y install libreadline-dev libncurses5-dev libpcre3-dev"
+  sh "apt-get -y install libssl-dev perl make build-essential"
 end
 
-desc "install openresty"
+desc "install openresty in output dir, such as: rake install[/opt]"
 task :install,[:output] do |t,args|
   
   origin_dir = getwd()
@@ -47,8 +46,7 @@ task :install,[:output] do |t,args|
   
   sym_name = openresty.split("-")[0]
   cd "#{args[:output]}"
-  ln_sf "sudo #{args[:output]}/#{base}",sym_name
+  sh "sudo ln -sf #{args[:output]}/#{openresty},#{sym_name}"
   
 end
 
-task :default => :install
